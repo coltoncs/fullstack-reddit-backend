@@ -1,24 +1,45 @@
-import { Entity, PrimaryKey, Property, OptionalProps } from "@mikro-orm/core";
-import { Field, ObjectType } from "type-graphql";
+import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Field, Int, ObjectType } from "type-graphql";
+import { User, Upvote } from "./";
 
 @ObjectType()
 @Entity()
-export class Post {
-  [OptionalProps]?: "title" | "updateAt" | "createdAt";
-
+export class Post extends BaseEntity {
   @Field()
-  @PrimaryKey()
+  @PrimaryGeneratedColumn()
   id!: Number;
 
-  @Field(() => String)
-  @Property({ type: 'date' })
-  createdAt = new Date();
-
-  @Field(() => String)
-  @Property({ type: 'date', onUpdate: () => new Date() })
-  updatedAt = new Date();
+  @Field()
+  @Column()
+  creatorId: number;
 
   @Field()
-  @Property({type: 'text'})
+  @ManyToOne(() => User, user => user.posts)
+  creator: User;
+
+  @OneToMany(() => Upvote, upvote => upvote.post)
+  upvotes: Upvote[];
+
+  @Field(() => String)
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @Field(() => String)
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  @Field()
+  @Column()
   title?: string;
+
+  @Field()
+  @Column()
+  text!: string;
+
+  @Field()
+  @Column({ type: "int", default: 0 })
+  points!: number;
+
+  @Field(() => Int, { nullable: true })
+  voteStatus: number | null;
 }
